@@ -1,5 +1,19 @@
 use std::env;
 use std::fs;
+use std::collections::VecDeque;
+
+const NUMBERS: [(&str, &str); 10] = [
+  ("zero", "z0o"),
+  ("one", "o1e"),
+  ("two", "t2o"),
+  ("three", "t3e"),
+  ("four", "f4r"),
+  ("five", "f5e"),
+  ("six", "s6x"),
+  ("seven", "s7n"),
+  ("eight", "e8t"),
+  ("nine", "n9e"),
+];
 
 
 fn main() {
@@ -14,12 +28,19 @@ fn main() {
 
 
 fn line_value(line: &str) -> u32 {
-  let mut digits = line.match_indices(|c| char::is_ascii_digit(&c));
-  let res: Option<u32> = match (digits.next(), digits.next_back()) {
-    (Some(t), Some(o)) => (t.1.to_owned() + o.1).parse().ok(),
-    (Some(t), None) => (t.1.to_owned() + t.1).parse().ok(),
+  let init = line.to_string();
+  // println!("line: {init}");
+  let mut digits: VecDeque<String> = NUMBERS.iter().fold(
+    init,
+    |acc, num| acc.replace(num.0, num.1)
+  ).matches(|c| char::is_ascii_digit(&c)).map(|m| m.to_owned()).collect();
+  // println!("  digits: {digits:?}");
+  let res: Option<u32> = match (digits.pop_front(), digits.pop_back()) {
+    (Some(t), Some(o)) => (t + &o).parse().ok(),
+    (Some(t), None) => t.repeat(2).parse().ok(),
     _ => None,
   };
+  // println!("  res: {res:?}");
   if let Some(value) = res {
     value
   } else {
